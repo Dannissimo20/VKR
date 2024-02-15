@@ -4,10 +4,10 @@ import uuid
 from sqlalchemy.orm import Session
 
 from models.client_model import Client
-from schemas.client_schema import AddSchema
+from schemas.client_schema import ClientAddSchema
 
 
-def add(db: Session, client: AddSchema):
+def add(db: Session, client: ClientAddSchema):
     try:
         pattern = r"^\w+\s\w+\s\w+$"
         if re.match(pattern, client.name):
@@ -18,5 +18,5 @@ def add(db: Session, client: AddSchema):
         else:
             return 'name error'
         return 'ok'
-    except AttributeError as e:
+    except Exception as e:
         raise e

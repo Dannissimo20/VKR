@@ -1,4 +1,6 @@
 from sqlalchemy import Column, String, DateTime
+from sqlalchemy.orm import relationship
+
 from database.database import Base
 
 
@@ -7,3 +9,4 @@ class Client(Base):
     id = Column(String, primary_key=True)
     name = Column(String)
     dob = Column(DateTime)
+    cars = relationship("Car")

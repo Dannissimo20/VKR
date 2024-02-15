@@ -3,11 +3,11 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class AddSchema(BaseModel):
+class ClientAddSchema(BaseModel):
     name: str
     DoB: datetime
 
 
-class AddResponse(BaseModel):
+class ClientAddResponse(BaseModel):
     status: int
     message: str
