@@ -11,3 +11,8 @@ class ClientAddSchema(BaseModel):
 class ClientAddResponse(BaseModel):
     status: int
     message: str
+
+
+class ClientSchema(BaseModel):
+    name: str
+    DoB: datetime
