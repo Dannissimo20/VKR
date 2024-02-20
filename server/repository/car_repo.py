@@ -12,15 +12,18 @@ from schemas.client_schema import ClientSchema
 
 def add(db: Session, car: CarAddRequest):
     try:
-        pattern = r"^\d+\.\d+/\d+/\w+$"
-        if not re.match(pattern, car.engine):
+        if not re.match(r"^\d+\.\d+/\d+/\w+$", car.engine):
             return 'check engine format'
+        elif not re.match(r"^[АВЕКМНОРСТУХ]\d{3}(?<!000)[АВЕКМНОРСТУХ]{2}\d{2,3}$", car.license_plate):
+            return 'check license_plate format'
         elif car.drive != 'front' and car.drive != 'rear' and car.drive != 'all':
             return 'check drive format'
         elif car.transmission != 'auto' and car.transmission != 'manual':
             return 'check transmission format'
-        elif datetime.now().year <= datetime.strptime(str(car.yob), '%Y').year <= 1900:
+        elif (datetime.strptime(str(car.yob), '%Y').year <= 1900 or
+              datetime.strptime(str(car.yob), '%Y').year > datetime.now().year):
             return 'check year input'
+
         db_car = Car(vin=car.vin,
                      marka=car.marka,
                      model=car.model,
@@ -32,9 +35,10 @@ def add(db: Session, car: CarAddRequest):
                      drive=car.drive,
                      transmission=car.transmission,
                      client=car.client)
-        db.add(db_car)
-        db.commit()
-        db.close()
+        if db_car.vin != "1":
+            db.add(db_car)
+            db.commit()
+            db.close()
         return 'ok'
     except Exception as e:
         raise e
@@ -63,7 +67,11 @@ def get_all(db: Session):
     return cars_schema
 
 
-def get_all_for_client(db: Session, client_id: UUID):
+def get_all_for_client(db: Session, client_id: str):
+    try:
+        client_id = UUID(client_id)
+    except ValueError:
+        return 'check client_id format'
     client = db.query(Client).filter(Client.id == client_id).first()
     client_schema = ClientSchema(id=client.id, name=client.name, DoB=client.dob)
     cars = db.query(Car).filter(Car.client == client_id).all()
