@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from models.car_model import Car
 from models.client_model import Client
 from schemas.car_schema import CarAddRequest, CarGetSchema
-from schemas.client_schema import ClientSchema
 
 
 def add(db: Session, car: CarAddRequest):
@@ -49,7 +48,6 @@ def get_all(db: Session):
     cars_schema = []
     for car in cars:
         client = db.query(Client).get(car.client)
-        client_schema = ClientSchema(id=client.id, name=client.name, DoB=client.dob)
         car_schema = CarGetSchema(
             vin=car.vin,
             marka=car.marka,
@@ -61,7 +59,7 @@ def get_all(db: Session):
             engine=car.engine,
             drive=car.drive,
             transmission=car.transmission,
-            client=client_schema
+            client=str(client.id)
         )
         cars_schema.append(car_schema)
     return cars_schema
@@ -73,7 +71,6 @@ def get_all_for_client(db: Session, client_id: str):
     except ValueError:
         return 'check client_id format'
     client = db.query(Client).filter(Client.id == client_id).first()
-    client_schema = ClientSchema(id=client.id, name=client.name, dob=client.dob)
     cars = db.query(Car).filter(Car.client == client_id).all()
     cars_schema = []
     for car in cars:
@@ -88,7 +85,7 @@ def get_all_for_client(db: Session, client_id: str):
             engine=car.engine,
             drive=car.drive,
             transmission=car.transmission,
-            client=client_schema
+            client=client.id
         )
         cars_schema.append(car_schema)
     return cars_schema

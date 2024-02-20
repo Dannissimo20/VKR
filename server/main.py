@@ -1,6 +1,7 @@
 from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 
+from Tests.test_database import TestSessionLocal
 from database.database import SessionLocal
 from repository import client_repo, car_repo
 from schemas.car_schema import CarAddResponse, CarAddRequest, CarGetAllSchema
@@ -34,6 +35,15 @@ async def add_client(client: ClientAddSchema, db: Session = Depends(get_db)):
         return {'status': 400, 'message': 'check name format'}
     else:
         return {'status': 500, 'message': 'internal server error'}
+
+
+@app.get('/client/get_all',
+         response_model=ClientGetAllSchema,
+         tags=['Клиенты'],
+         summary='Получение всех клиентов')
+async def get_all_clients(db: Session = Depends(get_db)):
+    clients = client_repo.get_all(db)
+    return ClientGetAllSchema(clients=clients)
 
 
 @app.get('/car/get_all',

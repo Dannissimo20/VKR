@@ -3,10 +3,13 @@ from typing import List
 
 from pydantic import BaseModel
 
+from schemas.car_schema import CarSchema
+
 
 class ClientSchema(BaseModel):
     name: str
     dob: datetime
+    cars: List[CarSchema]
 
 
 class ClientAddSchema(BaseModel):
@@ -19,3 +22,5 @@ class ClientAddResponse(BaseModel):
     message: str
 
 
+class ClientGetAllSchema(BaseModel):
+    clients: List[ClientSchema]

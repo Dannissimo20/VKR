@@ -2,8 +2,6 @@ from typing import List
 
 from pydantic import BaseModel
 
-from schemas.client_schema import ClientSchema
-
 
 class CarSchema(BaseModel):
     vin: str
@@ -23,7 +21,7 @@ class CarAddRequest(CarSchema):
 
 
 class CarGetSchema(CarSchema):
-    client: ClientSchema
+    client: str
 
 
 class CarGetAllSchema(BaseModel):

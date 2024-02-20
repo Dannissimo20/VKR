@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from models.client_model import Client
 from models.car_model import Car
-from schemas.client_schema import ClientAddSchema
+from schemas.car_schema import CarSchema
+from schemas.client_schema import ClientAddSchema, ClientSchema
 
 
 def add(db: Session, client: ClientAddSchema):
@@ -26,3 +27,23 @@ def add(db: Session, client: ClientAddSchema):
         return 'ok'
     except Exception as e:
         raise e
+
+
+def get_all(db: Session):
+    clients = db.query(Client).all()
+    clients_schema = []
+    for client in clients:
+        cars = db.query(Car).filter(Car.client == client.id).all()
+        cars = [CarSchema(vin=car.vin,
+                          marka=car.marka,
+                          model=car.model,
+                          color=car.color,
+                          license_plate=car.license_plate,
+                          body=car.body,
+                          yob=car.yob,
+                          engine=car.engine,
+                          drive=car.drive,
+                          transmission=car.transmission) for car in cars]
+        client_schema = ClientSchema(name=client.name, dob=client.dob, cars=cars)
+        clients_schema.append(client_schema)
+    return clients_schema
