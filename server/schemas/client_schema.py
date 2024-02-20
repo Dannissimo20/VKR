@@ -1,11 +1,17 @@
 from datetime import datetime
+from typing import List
 
 from pydantic import BaseModel
 
 
+class ClientSchema(BaseModel):
+    name: str
+    dob: datetime
+
+
 class ClientAddSchema(BaseModel):
     name: str
-    DoB: datetime
+    dob: str = "1970-01-01"
 
 
 class ClientAddResponse(BaseModel):
@@ -13,6 +19,3 @@ class ClientAddResponse(BaseModel):
     message: str
 
 
-class ClientSchema(BaseModel):
-    name: str
-    DoB: datetime

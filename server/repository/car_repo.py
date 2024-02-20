@@ -73,7 +73,7 @@ def get_all_for_client(db: Session, client_id: str):
     except ValueError:
         return 'check client_id format'
     client = db.query(Client).filter(Client.id == client_id).first()
-    client_schema = ClientSchema(id=client.id, name=client.name, DoB=client.dob)
+    client_schema = ClientSchema(id=client.id, name=client.name, dob=client.dob)
     cars = db.query(Car).filter(Car.client == client_id).all()
     cars_schema = []
     for car in cars:
