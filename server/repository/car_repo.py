@@ -85,7 +85,7 @@ def get_all_for_client(db: Session, client_id: str):
             engine=car.engine,
             drive=car.drive,
             transmission=car.transmission,
-            client=client.id
+            client=str(client.id)
         )
         cars_schema.append(car_schema)
     return cars_schema
