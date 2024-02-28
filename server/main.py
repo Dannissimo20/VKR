@@ -1,11 +1,17 @@
-from fastapi import Depends, FastAPI
+from datetime import timedelta
+
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from typing import Annotated
 
 from Tests.test_database import TestSessionLocal
 from database.database import SessionLocal
 from repository import client_repo, car_repo
 from schemas.car_schema import CarAddResponse, CarAddRequest, CarGetAllSchema
 from schemas.client_schema import ClientAddSchema, ClientAddResponse, ClientGetAllSchema
+from jwt import get_current_active_user, User, Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
+    create_access_token
 
 app = FastAPI()
 
@@ -31,6 +37,25 @@ async def root():
     return {"message": "Hello World"}
 
 
+@app.post("/token")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Session = Depends(get_db),
+) -> Token:
+    user = authenticate_user(form_data.username, form_data.password, db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.login}, expires_delta=access_token_expires
+    )
+    return Token(access_token=access_token, token_type="bearer")
+
+
 @app.post("/client/add",
           response_model=ClientAddResponse,
           tags=["Клиенты"],
@@ -49,7 +74,14 @@ async def add_client(client: ClientAddSchema, db: Session = Depends(get_test_db)
          response_model=ClientGetAllSchema,
          tags=['Клиенты'],
          summary='Получение всех клиентов')
-async def get_all_clients(db: Session = Depends(get_test_db)):
+async def get_all_clients(current_user: Annotated[User, Depends(get_current_active_user)],
+                          db: Session = Depends(get_test_db)):
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     clients = client_repo.get_all(db)
     return ClientGetAllSchema(clients=clients)
 
