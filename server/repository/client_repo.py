@@ -33,7 +33,8 @@ def get_all(db: Session):
     clients = db.query(Client).all()
     clients_schema = []
     for client in clients:
-        cars = db.query(Car).filter(Car.client == client.id).all()
+        client_id = str(client.id)
+        cars = db.query(Car).filter(Car.client == client_id).all()
         cars = [CarSchema(vin=car.vin,
                           marka=car.marka,
                           model=car.model,
