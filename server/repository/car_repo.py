@@ -9,6 +9,23 @@ from models.client_model import Client
 from schemas.car_schema import CarAddRequest, CarGetSchema
 
 
+def converter_car_car_schema(car, client):
+    car_schema = CarGetSchema(
+        vin=car.vin,
+        marka=car.marka,
+        model=car.model,
+        color=car.color,
+        license_plate=car.license_plate,
+        body=car.body,
+        yob=car.yob,
+        engine=car.engine,
+        drive=car.drive,
+        transmission=car.transmission,
+        client=str(client.id)
+    )
+    return car_schema
+
+
 def add(db: Session, car: CarAddRequest):
     try:
         if not re.match(r"^\d+\.\d+/\d+/\w+$", car.engine):
@@ -48,19 +65,7 @@ def get_all(db: Session):
     cars_schema = []
     for car in cars:
         client = db.query(Client).get(car.client)
-        car_schema = CarGetSchema(
-            vin=car.vin,
-            marka=car.marka,
-            model=car.model,
-            color=car.color,
-            license_plate=car.license_plate,
-            body=car.body,
-            yob=car.yob,
-            engine=car.engine,
-            drive=car.drive,
-            transmission=car.transmission,
-            client=str(client.id)
-        )
+        car_schema = converter_car_car_schema(car, client)
         cars_schema.append(car_schema)
     return cars_schema
 
@@ -74,18 +79,6 @@ def get_all_for_client(db: Session, client_id: str):
     cars = db.query(Car).filter(Car.client == client_id).all()
     cars_schema = []
     for car in cars:
-        car_schema = CarGetSchema(
-            vin=car.vin,
-            marka=car.marka,
-            model=car.model,
-            color=car.color,
-            license_plate=car.license_plate,
-            body=car.body,
-            yob=car.yob,
-            engine=car.engine,
-            drive=car.drive,
-            transmission=car.transmission,
-            client=str(client.id)
-        )
+        car_schema = converter_car_car_schema(car, client)
         cars_schema.append(car_schema)
     return cars_schema
