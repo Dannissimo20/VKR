@@ -10,3 +10,4 @@ class Client(Base):
     name = Column(String)
     dob = Column(DateTime)
     cars = relationship("Car")
+    orders = relationship("Order")

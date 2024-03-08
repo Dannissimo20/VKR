@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, UUID, ForeignKey, Integer
+from sqlalchemy.orm import relationship
 
 from database.database import Base
 
@@ -16,3 +17,4 @@ class Car(Base):
     drive = Column(String)
     transmission = Column(String)
     client = Column(UUID(as_uuid=True), ForeignKey("clients.id"))
+    orders = relationship("Order")
