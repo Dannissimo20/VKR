@@ -7,14 +7,14 @@ from schemas.car_schema import CarSchema
 
 
 class ClientSchema(BaseModel):
-    name: str
-    dob: datetime
+    fio: str
+    phone: str = "71234567890"
     cars: List[CarSchema]
 
 
 class ClientAddRequest(BaseModel):
-    name: str
-    dob: str = "1970-01-01"
+    fio: str
+    phone: str = "71234567890"
 
 
 class ClientGetAllSchema(BaseModel):
