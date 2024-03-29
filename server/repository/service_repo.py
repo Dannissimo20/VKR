@@ -1,6 +1,7 @@
 import uuid
 
 from sqlalchemy.orm import Session
+from config import logger
 
 from models.service_model import Service
 from schemas.service_schema import ServiceAddRequest
@@ -14,4 +15,5 @@ def add(service: ServiceAddRequest, db: Session):
         db.close()
         return 'ok'
     except Exception as e:
+        logger.error(e)
         return str(e)

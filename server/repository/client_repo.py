@@ -1,8 +1,8 @@
 import re
 import uuid
-from datetime import datetime
 
 from sqlalchemy.orm import Session
+from config import logger
 
 from models.client_model import Client
 from models.car_model import Car
@@ -12,20 +12,21 @@ from schemas.client_schema import ClientAddRequest, ClientSchema
 
 def add(db: Session, client: ClientAddRequest):
     try:
-        pattern = r"^\w+\s\w+\s\w+$"
-        if not re.match(pattern, client.name):
+        pattern = r"^\w+\s\w+$"
+        if not re.match(pattern, client.fio):
+            logger.warning(f'Wrong name format: {client.fio} instead of "name surname"')
             return 'check name format'
-        try:
-            dob = datetime.strptime(client.dob, '%Y-%m-%d')
-        except ValueError:
-            return 'check DoB format'
-        db_client = Client(id=uuid.uuid4(), name=client.name, dob=dob)
-        if db_client.name != "test test test":
-            db.add(db_client)
-            db.commit()
-            db.close()
+        pattern = r'^7\d{10}$'
+        if not re.match(pattern, client.phone):
+            logger.warning(f'Wrong phone format: {client.phone} instead of "71234567890"')
+            return 'check phone format'
+        db_client = Client(id=uuid.uuid4(), fio=client.fio, phone=client.phone)
+        db.add(db_client)
+        db.commit()
+        db.close()
         return 'ok'
     except Exception as e:
+        logger.error(e)
         raise e
 
 
@@ -45,6 +46,6 @@ def get_all(db: Session):
                           engine=car.engine,
                           drive=car.drive,
                           transmission=car.transmission) for car in cars]
-        client_schema = ClientSchema(name=client.name, dob=client.dob, cars=cars)
+        client_schema = ClientSchema(name=client.name, phone=client.phone, cars=cars)
         clients_schema.append(client_schema)
     return clients_schema

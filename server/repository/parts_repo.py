@@ -1,6 +1,7 @@
 import uuid
 
 from sqlalchemy.orm import Session
+from config import logger
 
 from models.parts_model import Parts
 from schemas.parts_schema import PartsAddRequest
@@ -14,4 +15,5 @@ def add(part: PartsAddRequest, db: Session):
         db.close()
         return 'ok'
     except Exception as e:
+        logger.error(e)
         return str(e)

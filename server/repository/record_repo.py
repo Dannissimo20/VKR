@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy.orm import Session
+from config import logger
 
 from models.client_model import Client
 from models.record_model import Record
@@ -16,11 +17,12 @@ def add(record: RecordAddRequest, db: Session):
             client = Client(id=uuid.uuid4(), fio=record.client_fio, phone=record.client_phone)
             db.add(client)
         record_id = uuid.uuid4()
-        db_record = Record(id=record_id, confirmation=record.confirmation, date=datetime.strptime(record.date, '%d.%m.%Y'), client=client.id)
+        order = order_repo.add_from_record(db=db)
+        db_record = Record(id=record_id, order=order, confirmation=record.confirmation, date=datetime.strptime(record.date, '%d.%m.%Y'), client=client.id)
         db.add(db_record)
-        order_repo.add_from_record(record=db_record.id, db=db)
         db.commit()
         db.close()
         return 'ok'
     except Exception as e:
+        logger.error(e)
         return str(e)
