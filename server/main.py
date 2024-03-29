@@ -6,14 +6,18 @@ from sqlalchemy.orm import Session
 from typing import Annotated
 
 from database.database import SessionLocal
-from repository import client_repo, car_repo, lifter_repo
+from repository import client_repo, car_repo, lifter_repo, parts_repo, service_repo, order_repo, record_repo
 from schemas.add_response import AddResponse
 from schemas.car_schema import CarAddRequest, CarGetAllSchema
 from schemas.client_schema import ClientAddRequest, ClientGetAllSchema
 from schemas.lifter_schema import LifterAddRequest, LifterSchema, LiftersGetAllSchema
+from schemas.order_schema import OrderAddRequest
+from schemas.parts_schema import PartsAddRequest
 
 from jwt import get_current_active_user, User, Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token
+from schemas.record_schema import RecordAddRequest
+from schemas.service_schema import ServiceAddRequest
 
 app = FastAPI()
 
@@ -135,3 +139,51 @@ async def get_all_lifters(db: Session = Depends(get_db)):
          summary='Получение подъемника по имени')
 async def get_lifter_by_id(lifter_id: str, db: Session = Depends(get_db)):
     lifter_repo.get_by_id(lifter_id, db)
+
+
+@app.post('/parts/add',
+          response_model=AddResponse,
+          tags=['Запчасти'],
+          summary='Добавление запчасти в базу')
+async def add_parts(parts: PartsAddRequest, db: Session = Depends(get_db)):
+    res = parts_repo.add(parts, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
+
+
+@app.post('/service/add',
+          response_model=AddResponse,
+          tags=['Услуги'],
+          summary='Добавление услуги в базу')
+async def add_service(service: ServiceAddRequest, db: Session = Depends(get_db)):
+    res = service_repo.add(service, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
+
+
+@app.post('/order/add',
+          response_model=AddResponse,
+          tags=['Заказы'],
+          summary='Добавление заказа в базу')
+async def add_order(order: OrderAddRequest, db: Session = Depends(get_db)):
+    res = order_repo.add(order, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
+
+
+@app.post('/record/add',
+          response_model=AddResponse,
+          tags=['Записи'],
+          summary='Добавление записи в базу')
+async def add_record(record: RecordAddRequest, db: Session = Depends(get_db)):
+    res = record_repo.add(record, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
