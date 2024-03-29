@@ -15,7 +15,7 @@ class Order(Base):
     worker = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     parts = relationship("Parts", secondary=PartsOrders)
     part_count = Column(Integer)
-    service = relationship("Service", secondary=ServicesOrders)
+    service = relationship("Service", secondary=ServicesOrders, overlaps="orders")
     summa = Column(Float)
     lifter = relationship("Lifter", secondary=LiftersOrders)
     status = Column(Integer)
