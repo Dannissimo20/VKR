@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 
 from Tests.test_database import TestSessionLocal
 from repository import client_repo
-from schemas.client_schema import ClientAddSchema
+from schemas.client_schema import ClientAddRequest
 
-client = ClientAddSchema(name='test test test', dob='1970-01-01')
+client = ClientAddRequest(name='test test test', dob='1970-01-01')
 
 
 class AddClientTest(unittest.TestCase):
