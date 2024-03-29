@@ -7,10 +7,10 @@ from sqlalchemy.orm import Session
 from models.client_model import Client
 from models.car_model import Car
 from schemas.car_schema import CarSchema
-from schemas.client_schema import ClientAddSchema, ClientSchema
+from schemas.client_schema import ClientAddRequest, ClientSchema
 
 
-def add(db: Session, client: ClientAddSchema):
+def add(db: Session, client: ClientAddRequest):
     try:
         pattern = r"^\w+\s\w+\s\w+$"
         if not re.match(pattern, client.name):

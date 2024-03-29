@@ -12,14 +12,9 @@ class ClientSchema(BaseModel):
     cars: List[CarSchema]
 
 
-class ClientAddSchema(BaseModel):
+class ClientAddRequest(BaseModel):
     name: str
     dob: str = "1970-01-01"
-
-
-class ClientAddResponse(BaseModel):
-    status: int
-    message: str
 
 
 class ClientGetAllSchema(BaseModel):

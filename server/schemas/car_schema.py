@@ -26,8 +26,3 @@ class CarGetSchema(CarSchema):
 
 class CarGetAllSchema(BaseModel):
     cars: List[CarGetSchema]
-
-
-class CarAddResponse(BaseModel):
-    status: int
-    message: str
