@@ -5,12 +5,13 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from Tests.test_database import TestSessionLocal
 from database.database import SessionLocal
-from repository import client_repo, car_repo
+from repository import client_repo, car_repo, lifter_repo
 from schemas.add_response import AddResponse
 from schemas.car_schema import CarAddRequest, CarGetAllSchema
 from schemas.client_schema import ClientAddRequest, ClientGetAllSchema
+from schemas.lifter_schema import LifterAddRequest, LifterSchema, LiftersGetAllSchema
+
 from jwt import get_current_active_user, User, Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token
 
@@ -19,14 +20,6 @@ app = FastAPI()
 
 def get_db():
     db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-def get_test_db():
-    db = TestSessionLocal()
     try:
         yield db
     finally:
@@ -113,3 +106,32 @@ async def add_car(car: CarAddRequest, db: Session = Depends(get_db)):
         return AddResponse(status=200, message=res)
     else:
         return AddResponse(status=400, message=res)
+
+
+@app.post('/lifter/add',
+          response_model=AddResponse,
+          tags=['Подъемники'],
+          summary='Добавление подъемника в базу')
+async def add_lifter(lifter: LifterAddRequest, db: Session = Depends(get_db)):
+    res = lifter_repo.add(lifter, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
+
+
+@app.get('/lifter/get_all',
+         response_model=LiftersGetAllSchema,
+         tags=['Подъемники'],
+         summary='Получение всех подъемников')
+async def get_all_lifters(db: Session = Depends(get_db)):
+    lifters = lifter_repo.get_all(db)
+    return LiftersGetAllSchema(lifters=lifters)
+
+
+@app.get('/lifter/get_by_id',
+         response_model=LifterSchema,
+         tags=['Подъемники'],
+         summary='Получение подъемника по имени')
+async def get_lifter_by_id(lifter_id: str, db: Session = Depends(get_db)):
+    lifter_repo.get_by_id(lifter_id, db)
