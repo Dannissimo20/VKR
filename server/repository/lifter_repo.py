@@ -1,3 +1,4 @@
+import uuid
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -8,7 +9,7 @@ from schemas.lifter_schema import LifterAddRequest, LifterSchema
 
 def add(lifter: LifterAddRequest, db: Session):
     try:
-        db_lifter = Lifter(name=lifter.name, description=lifter.description, purpose=lifter.purpose)
+        db_lifter = Lifter(id=uuid.uuid4(), name=lifter.name, description=lifter.description, purpose=lifter.purpose)
         db.add(db_lifter)
         db.commit()
         db.close()
