@@ -17,4 +17,4 @@ class Car(Base):
     drive = Column(String)
     transmission = Column(String)
     client = Column(UUID(as_uuid=True), ForeignKey("clients.id"))
-    orders = relationship("Order")
+    records = relationship("Record")

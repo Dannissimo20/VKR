@@ -11,8 +11,7 @@ from database.database import Base
 class Order(Base):
     __tablename__ = "order"
     id = Column(UUID(as_uuid=True), primary_key=True)
-    car = Column(UUID(as_uuid=True), ForeignKey("cars.vin"))
-    client = Column(UUID(as_uuid=True), ForeignKey("clients.id"))
+    record = Column(UUID(as_uuid=True), ForeignKey("record.id"))
     worker = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     parts = relationship("Parts", secondary=PartsOrders)
     part_count = Column(Integer)
