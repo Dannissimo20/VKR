@@ -12,7 +12,7 @@ from schemas.car_schema import CarAddRequest, CarGetAllSchema
 from schemas.client_schema import ClientAddRequest, ClientGetAllSchema
 from schemas.lifter_schema import LifterAddRequest, LifterSchema, LiftersGetAllSchema
 from schemas.order_schema import OrderAddRequest
-from schemas.parts_schema import PartsAddRequest, PartsGetAllSchema, PartsSchema
+from schemas.parts_schema import PartsAddRequest, PartsGetAllSchema, PartsSchema, PartsUpdateCountRequest
 
 from jwt import get_current_active_user, User, Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token
@@ -174,8 +174,8 @@ async def get_parts_by_id(parts_id: str, db: Session = Depends(get_db)):
          response_model=AddResponse,
          tags=['Запчасти'],
          summary='Изменение количества запчастей на складе')
-async def update_parts_count(parts_id: str, count: int, db: Session = Depends(get_db)):
-    res = parts_repo.update_for_count(parts_id, count, db)
+async def update_parts_count(req: PartsUpdateCountRequest, db: Session = Depends(get_db)):
+    res = parts_repo.update_for_count(req.part_id, req.count, db)
     if res == 'ok':
         return AddResponse(status=200, message=res)
     else:

@@ -22,3 +22,8 @@ class PartsSchema(BaseModel):
 
 class PartsGetAllSchema(BaseModel):
     parts: List[PartsSchema]
+
+
+class PartsUpdateCountRequest(BaseModel):
+    part_id: str
+    count: int
