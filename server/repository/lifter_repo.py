@@ -23,7 +23,7 @@ def add(lifter: LifterAddRequest, db: Session):
 def get_all(db: Session):
     try:
         lifters = db.query(Lifter).all()
-        lifters_schema = [LifterSchema(name=lifter.name, description=lifter.description, purpose=lifter.purpose)
+        lifters_schema = [LifterSchema(id=str(lifter.id), name=lifter.name, description=lifter.description, purpose=lifter.purpose)
                           for lifter in lifters]
     except Exception as e:
         logger.error(e)
@@ -44,4 +44,4 @@ def get_by_id(lifter_id, db: Session):
     if lifter is None:
         logger.warning(f'lifter for id {lifter_id} not found')
         return 'lifter not found'
-    return LifterSchema(name=lifter.name, description=lifter.description, purpose=lifter.purpose)
+    return LifterSchema(id=str(lifter.id), name=lifter.name, description=lifter.description, purpose=lifter.purpose)

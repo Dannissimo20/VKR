@@ -10,6 +10,7 @@ class LifterAddRequest(BaseModel):
 
 
 class LifterSchema(BaseModel):
+    id: str
     name: str
     description: str
     purpose: str

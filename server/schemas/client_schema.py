@@ -15,6 +15,8 @@ class ClientSchema(BaseModel):
 class ClientAddRequest(BaseModel):
     fio: str
     phone: str = "71234567890"
+    dob: str
+    email: str
 
 
 class ClientGetAllSchema(BaseModel):
