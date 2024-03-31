@@ -67,7 +67,7 @@ def update_for_count(part_id, count, db: Session):
         if part is None:
             logger.warning(f'part for id {part_id} not found')
             return 'part not found'
-        part.count = count
+        part.count = part.count - count
         db.commit()
         db.close()
         return 'ok'
