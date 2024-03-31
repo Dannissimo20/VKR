@@ -12,7 +12,7 @@ from schemas.car_schema import CarAddRequest, CarGetAllSchema
 from schemas.client_schema import ClientAddRequest, ClientGetAllSchema
 from schemas.lifter_schema import LifterAddRequest, LifterSchema, LiftersGetAllSchema
 from schemas.order_schema import OrderAddRequest
-from schemas.parts_schema import PartsAddRequest
+from schemas.parts_schema import PartsAddRequest, PartsGetAllSchema, PartsSchema
 
 from jwt import get_current_active_user, User, Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token
@@ -147,6 +147,35 @@ async def get_lifter_by_id(lifter_id: str, db: Session = Depends(get_db)):
           summary='Добавление запчасти в базу')
 async def add_parts(parts: PartsAddRequest, db: Session = Depends(get_db)):
     res = parts_repo.add(parts, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
+
+
+@app.get('/parts/get_all',
+         response_model=PartsGetAllSchema,
+         tags=['Запчасти'],
+         summary='Получение всех запчастей')
+async def get_all_parts(db: Session = Depends(get_db)):
+    parts = parts_repo.get_all(db)
+    return PartsGetAllSchema(parts=parts)
+
+
+@app.get('/parts/get_by_id',
+         response_model=PartsSchema,
+         tags=['Запчасти'],
+         summary='Получение запчасти по имени')
+async def get_parts_by_id(parts_id: str, db: Session = Depends(get_db)):
+    return parts_repo.get_by_id(parts_id, db)
+
+
+@app.put('/parts/update_count',
+         response_model=AddResponse,
+         tags=['Запчасти'],
+         summary='Изменение количества запчастей на складе')
+async def update_parts_count(parts_id: str, count: int, db: Session = Depends(get_db)):
+    res = parts_repo.update_for_count(parts_id, count, db)
     if res == 'ok':
         return AddResponse(status=200, message=res)
     else:
