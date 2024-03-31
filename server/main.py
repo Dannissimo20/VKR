@@ -138,7 +138,7 @@ async def get_all_lifters(db: Session = Depends(get_db)):
          tags=['Подъемники'],
          summary='Получение подъемника по имени')
 async def get_lifter_by_id(lifter_id: str, db: Session = Depends(get_db)):
-    lifter_repo.get_by_id(lifter_id, db)
+    return lifter_repo.get_by_id(lifter_id, db)
 
 
 @app.post('/parts/add',
