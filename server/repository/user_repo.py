@@ -1,7 +1,9 @@
+from typing import cast
+
 from sqlalchemy.orm import Session
 
 from models.user_model import User
-from schemas.user_schema import CreateUserSchema, UserSchema
+from schemas.user_schema import CreateUserSchema
 
 
 def create_user(session: Session, user: CreateUserSchema):
@@ -19,4 +21,4 @@ def create_user(session: Session, user: CreateUserSchema):
 
 
 def get_user(session: Session, login: str):
-    return session.query(User).filter(User.login == login).one()
+    return session.query(User).filter(cast('ColumnElement[bool]', User.login == login)).one()

@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import cast
 
 from sqlalchemy.orm import Session
 from config import logger
@@ -12,7 +13,7 @@ from schemas.record_schema import RecordAddRequest
 
 def add(record: RecordAddRequest, db: Session):
     try:
-        client = db.query(Client).filter(Client.phone == record.client_phone, Client.fio == record.client_fio).first()
+        client = db.query(Client).filter(cast('ColumnElement[bool]', Client.phone == record.client_phone), cast('ColumnElement[bool]', Client.fio == record.client_fio)).first()
         if client is None:
             client = Client(id=uuid.uuid4(), fio=record.client_fio, phone=record.client_phone)
             db.add(client)

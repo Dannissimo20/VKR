@@ -74,7 +74,6 @@ def signup(
     payload: CreateUserSchema,
     session: Session = Depends(get_db)
 ):
-    """Processes request to register user account."""
     payload.password = User.hash_password(payload.password)
     return user_repo.create_user(session, user=payload)
 
