@@ -27,3 +27,8 @@ class PartsGetAllSchema(BaseModel):
 class PartsUpdateCountRequest(BaseModel):
     part_id: str
     count: int
+
+
+class PartsUpdatePriceRequest(BaseModel):
+    part_id: str
+    price: float

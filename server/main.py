@@ -12,12 +12,13 @@ from schemas.car_schema import CarAddRequest, CarGetAllSchema
 from schemas.client_schema import ClientAddRequest, ClientGetAllSchema
 from schemas.lifter_schema import LifterAddRequest, LifterSchema, LiftersGetAllSchema
 from schemas.order_schema import OrderAddRequest
-from schemas.parts_schema import PartsAddRequest, PartsGetAllSchema, PartsSchema, PartsUpdateCountRequest
+from schemas.record_schema import RecordAddRequest
+from schemas.service_schema import ServiceAddRequest
+from schemas.parts_schema import PartsAddRequest, PartsGetAllSchema, PartsSchema, PartsUpdateCountRequest, \
+    PartsUpdatePriceRequest
 
 from jwt import get_current_active_user, User, Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token
-from schemas.record_schema import RecordAddRequest
-from schemas.service_schema import ServiceAddRequest
 
 app = FastAPI()
 
@@ -176,6 +177,18 @@ async def get_parts_by_id(parts_id: str, db: Session = Depends(get_db)):
          summary='Изменение количества запчастей на складе')
 async def update_parts_count(req: PartsUpdateCountRequest, db: Session = Depends(get_db)):
     res = parts_repo.update_for_count(req.part_id, req.count, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
+
+
+@app.put('/parts/update_price',
+         response_model=AddResponse,
+         tags=['Запчасти'],
+         summary='Изменение цены запчастей')
+async def update_parts_price(req: PartsUpdatePriceRequest, db: Session = Depends(get_db)):
+    res = parts_repo.update_for_price(req.part_id, req.price, db)
     if res == 'ok':
         return AddResponse(status=200, message=res)
     else:

@@ -74,3 +74,19 @@ def update_for_count(part_id, count, db: Session):
     except Exception as e:
         logger.error(e)
         return str(e)
+
+
+def update_for_price(part_id, price, db: Session):
+    try:
+        part_id = uuid.UUID(part_id)
+        part = db.query(Parts).filter(Parts.id == part_id).first()
+        if part is None:
+            logger.warning(f'part for id {part_id} not found')
+            return 'part not found'
+        part.price = price
+        db.commit()
+        db.close()
+        return 'ok'
+    except Exception as e:
+        logger.error(e)
+        return str(e)
