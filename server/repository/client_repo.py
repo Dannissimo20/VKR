@@ -46,6 +46,6 @@ def get_all(db: Session):
                           engine=car.engine,
                           drive=car.drive,
                           transmission=car.transmission) for car in cars]
-        client_schema = ClientSchema(name=client.name, phone=client.phone, cars=cars)
+        client_schema = ClientSchema(fio=client.fio, phone=client.phone, cars=cars)
         clients_schema.append(client_schema)
     return clients_schema
