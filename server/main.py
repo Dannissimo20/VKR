@@ -1,12 +1,15 @@
-from datetime import timedelta
+from typing import Dict
 
-from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+import jwt
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from typing import Annotated
+from starlette import status
 
+from config import SECRET_KEY, ALGORITHM
 from database.database import SessionLocal
-from repository import client_repo, car_repo, lifter_repo, parts_repo, service_repo, order_repo, record_repo
+from models.user_model import User
+from repository import client_repo, car_repo, lifter_repo, parts_repo, service_repo, order_repo, record_repo, user_repo
 from schemas.add_response import AddResponse
 from schemas.car_schema import CarAddRequest, CarGetAllSchema
 from schemas.client_schema import ClientAddRequest, ClientGetAllSchema
@@ -16,11 +19,11 @@ from schemas.record_schema import RecordAddRequest
 from schemas.service_schema import ServiceAddRequest
 from schemas.parts_schema import PartsAddRequest, PartsGetAllSchema, PartsSchema, PartsUpdateCountRequest, \
     PartsUpdatePriceRequest
-
-from jwt import get_current_active_user, User, Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
-    create_access_token
+from schemas.user_schema import UserSchema, CreateUserSchema
 
 app = FastAPI()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 def get_db():
@@ -36,23 +39,44 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.post("/token")
-async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: Session = Depends(get_db),
-) -> Token:
-    user = authenticate_user(form_data.username, form_data.password, db)
-    if not user:
+@app.post('/login',
+          response_model=Dict,
+          tags=['Пользователи'],
+          summary="Авторизация пользователя")
+def login(
+        payload: OAuth2PasswordRequestForm = Depends(),
+        session: Session = Depends(get_db)):
+    try:
+        user: User = user_repo.get_user(
+            session=session, login=payload.username
+        )
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail="Invalid user credentials"
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.login}, expires_delta=access_token_expires
-    )
-    return Token(access_token=access_token, token_type="bearer")
+
+    is_validated: bool = user.validate_password(payload.password)
+    if not is_validated:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid user credentials"
+        )
+
+    return user.generate_token()
+
+
+@app.post('/signup',
+          response_model=UserSchema,
+          tags=['Пользователи'],
+          summary="Регистрация нового пользователя")
+def signup(
+    payload: CreateUserSchema,
+    session: Session = Depends(get_db)
+):
+    """Processes request to register user account."""
+    payload.password = User.hash_password(payload.password)
+    return user_repo.create_user(session, user=payload)
 
 
 @app.post("/client/add",
@@ -71,14 +95,10 @@ async def add_client(client: ClientAddRequest, db: Session = Depends(get_db)):
          response_model=ClientGetAllSchema,
          tags=['Клиенты'],
          summary='Получение всех клиентов')
-async def get_all_clients(current_user: Annotated[User, Depends(get_current_active_user)],
-                          db: Session = Depends(get_db)):
-    if current_user.role != 'admin':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+async def get_all_clients(db: Session = Depends(get_db),
+                          token: str = Depends(oauth2_scheme)):
+    if jwt.decode(token, SECRET_KEY, ALGORITHM)['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not enough permissions")
     clients = client_repo.get_all(db)
     return ClientGetAllSchema(clients=clients)
 
