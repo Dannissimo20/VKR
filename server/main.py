@@ -3,6 +3,7 @@ from typing import Dict
 import jwt
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -14,14 +15,22 @@ from schemas.add_response import AddResponse
 from schemas.car_schema import CarAddRequest, CarGetAllSchema
 from schemas.client_schema import ClientAddRequest, ClientGetAllSchema
 from schemas.lifter_schema import LifterAddRequest, LifterSchema, LiftersGetAllSchema
-from schemas.order_schema import OrderAddRequest
-from schemas.record_schema import RecordAddRequest
+from schemas.order_schema import OrderAddRequest, OrderAddWorkerRequest, OrderAddPartsRequest, OrderAddServicesRequest
+from schemas.record_schema import RecordAddRequest, RecordConfirmRequest
 from schemas.service_schema import ServiceAddRequest
 from schemas.parts_schema import PartsAddRequest, PartsGetAllSchema, PartsSchema, PartsUpdateCountRequest, \
     PartsUpdatePriceRequest
-from schemas.user_schema import UserSchema, CreateUserSchema
+from schemas.user_schema import UserSchema, CreateUserSchema, AllWorkersResponse
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -78,6 +87,15 @@ def signup(
     return user_repo.create_user(session, user=payload)
 
 
+@app.get("/user/workers",
+         response_model=AllWorkersResponse,
+         tags=['Пользователи'],
+         summary='Получение всех работников')
+async def get_all_workers(db: Session = Depends(get_db)):
+    workers = user_repo.get_all_workers(db)
+    return AllWorkersResponse(workers=workers)
+
+
 @app.post("/client/add",
           response_model=AddResponse,
           tags=["Клиенты"],
@@ -94,10 +112,10 @@ async def add_client(client: ClientAddRequest, db: Session = Depends(get_db)):
          response_model=ClientGetAllSchema,
          tags=['Клиенты'],
          summary='Получение всех клиентов')
-async def get_all_clients(db: Session = Depends(get_db),
-                          token: str = Depends(oauth2_scheme)):
-    if jwt.decode(token, SECRET_KEY, ALGORITHM)['role'] != 'admin':
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+async def get_all_clients(db: Session = Depends(get_db)):
+                          # token: str = Depends(oauth2_scheme)):
+    # if jwt.decode(token, SECRET_KEY, ALGORITHM)['role'] != 'admin':
+    #     raise HTTPException(status_code=403, detail="Not enough permissions")
     clients = client_repo.get_all(db)
     return ClientGetAllSchema(clients=clients)
 
@@ -238,6 +256,42 @@ async def add_order(order: OrderAddRequest, db: Session = Depends(get_db)):
         return AddResponse(status=400, message=res)
 
 
+@app.put('/order/add_worker',
+         response_model=AddResponse,
+         tags=['Заказы'],
+         summary='Прикрепление сотрудника к записи')
+async def add_worker_to_order(order: OrderAddWorkerRequest, db: Session = Depends(get_db)):
+    res = order_repo.add_worker(order, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
+
+
+@app.put('/order/add_parts',
+         response_model=AddResponse,
+         tags=['Заказы'],
+         summary='Прикрепление запчастей к записи')
+async def add_parts_to_order(order: OrderAddPartsRequest, db: Session = Depends(get_db)):
+    res = order_repo.add_parts(order, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
+
+
+@app.put('/order/add_services',
+         response_model=AddResponse,
+         tags=['Заказы'],
+         summary='Прикрепление услуг к записи')
+async def add_services_to_order(order: OrderAddServicesRequest, db: Session = Depends(get_db)):
+    res = order_repo.add_services(order, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
+
+
 @app.post('/record/add',
           response_model=AddResponse,
           tags=['Записи'],
@@ -248,3 +302,30 @@ async def add_record(record: RecordAddRequest, db: Session = Depends(get_db)):
         return AddResponse(status=200, message=res)
     else:
         return AddResponse(status=400, message=res)
+
+
+@app.put('/record/confirm',
+         response_model=AddResponse,
+         tags=['Записи'],
+         summary='Подтверждение записи')
+async def confirm_record(record: RecordConfirmRequest, db: Session = Depends(get_db)):
+    res = record_repo.confirm(record, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
+
+
+@app.delete('/record/cancel',
+            response_model=AddResponse,
+            tags=['Записи'],
+            summary='Отмена записи')
+async def cancel_record(record: RecordConfirmRequest, db: Session = Depends(get_db)):
+    res = record_repo.cancel(record, db)
+    if res == 'ok':
+        return AddResponse(status=200, message=res)
+    else:
+        return AddResponse(status=400, message=res)
+
+
+

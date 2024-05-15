@@ -20,7 +20,7 @@ def add(db: Session, client: ClientAddRequest):
         if not re.match(pattern, client.phone):
             logger.warning(f'Wrong phone format: {client.phone} instead of "71234567890"')
             return 'check phone format'
-        db_client = Client(id=uuid.uuid4(), fio=client.fio, phone=client.phone)
+        db_client = Client(id=uuid.uuid4(), fio=client.fio, phone=client.phone, email=client.email, dob=client.dob)
         db.add(db_client)
         db.commit()
         db.close()
@@ -46,6 +46,6 @@ def get_all(db: Session):
                           engine=car.engine,
                           drive=car.drive,
                           transmission=car.transmission) for car in cars]
-        client_schema = ClientSchema(fio=client.fio, phone=client.phone, cars=cars)
+        client_schema = ClientSchema(fio=client.fio, phone=client.phone, cars=cars, email=client.email, dob=client.dob.isoformat())
         clients_schema.append(client_schema)
     return clients_schema

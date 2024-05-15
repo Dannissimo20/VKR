@@ -1,3 +1,5 @@
+import uuid
+
 from pydantic import BaseModel
 
 
@@ -6,3 +8,7 @@ class RecordAddRequest(BaseModel):
     date: str
     client_fio: str
     client_phone: str
+
+
+class RecordConfirmRequest(BaseModel):
+    id: str

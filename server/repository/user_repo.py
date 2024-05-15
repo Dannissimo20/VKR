@@ -3,7 +3,7 @@ from typing import cast
 from sqlalchemy.orm import Session
 
 from models.user_model import User
-from schemas.user_schema import CreateUserSchema
+from schemas.user_schema import CreateUserSchema, WorkerBaseSchema
 
 
 def create_user(session: Session, user: CreateUserSchema):
@@ -22,3 +22,9 @@ def create_user(session: Session, user: CreateUserSchema):
 
 def get_user(session: Session, login: str):
     return session.query(User).filter(cast('ColumnElement[bool]', User.login == login)).one()
+
+
+def get_all_workers(session: Session):
+    workers = session.query(User).filter(User.role == 'master').all()
+    workers_list = [WorkerBaseSchema(id=worker.id, fio=worker.fio) for worker in workers]
+    return workers_list

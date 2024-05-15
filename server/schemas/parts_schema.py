@@ -32,3 +32,8 @@ class PartsUpdateCountRequest(BaseModel):
 class PartsUpdatePriceRequest(BaseModel):
     part_id: str
     price: float
+
+
+class PartsForOrder(BaseModel):
+    part_id: str
+    count: int
